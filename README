@@ -1,0 +1,18 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1763
+
+- insert various types of comments
+- insert complete statements (e.g. 'if then else end' )
+- insert often used code snippets (e.g. empty function, open file) 
+- read, write, maintain your own code snippets in a separate directory
+- run scripts or run syntax check from within the editor
+- show compilation erros in a quickfix window; navigate with hotkeys 
+
+Here are some screen shots :   http://lug.fh-swf.de/vim/vim-lua/
+
+The help file online :   http://lug.fh-swf.de/vim/vim-doc/luasupport.html
+
+Documentation 
+_____________ 
+This plugin comes with a help file (luasupport.txt).  Read it with   
+   :h luasupport 
+or type \h in normal mode.

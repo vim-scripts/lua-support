@@ -1,0 +1,134 @@
+README for lua-support.vim (Version 1.0) / December 17 2006
+
+  *  INSTALLATION
+  *  RELEASE NOTES 
+  *  FILES
+  *  ADDITIONAL TIPS
+
+lua-support.vim implements a Lua-IDE for Vim/gVim.  It is written to
+considerably speed up writing code in a consistent style.  This is done by
+inserting complete statements, comments, idioms, code snippets, templates and
+comments.  Syntax checking and running a script can be done with a keystroke.
+There are many additional hints and options which can improve speed and comfort
+when writing Lua. Please read the documentation.
+
+=======================================================================================
+  INSTALLATION
+=======================================================================================
+
+The subdirectories in the zip archive  lua-support.zip  mirror the directory
+structure which is needed below the local installation directory $HOME/.vim/
+or $VIM\vimfiles (on the Windows platforms).
+
+(1) Copy the zip archive  lua-support.zip to $HOME/.vim and run
+
+      unzip lua-support.zip
+
+    If you have already an older version of lua-support and you have modified the
+    template files you may want to save your templates first or copy the files from the
+    archive by hand.
+
+(2) Set at least some personal details into .vimrc by overriding some defaults.
+    Here the minimal personalization (my settings as an example, of course):
+
+      let g:Lua_AuthorName      = 'Dr.-Ing. Fritz Mehner'     
+      let g:Lua_AuthorRef       = 'Mn'                         
+      let g:Lua_Email           = 'mehner@fh-swf.de'            
+      let g:Lua_Company         = 'FH Südwestfalen, Iserlohn'    
+
+    The files customization.vimrc and customization.gvimrc are replacements or 
+    extensions for your .vimrc and .gvimrc ( _vimrc and _gvimrc under Windows).
+    You may want to use parts of them. The files are documented. 
+
+There are a lot of features and options which can be used and influenced:
+
+  *  use of template files and tags
+  *  using and managing personal code snippets
+  *  Lua dictionary for keyword completion
+  *  removing the root menu
+  *  using additional plugins
+
+Restart gVim/Vim generate the help tags 
+
+  :helptags ~/.vim/doc
+
+and look at the luasupport help with
+
+  :help luasupport 
+
+               +-----------------------------------------------+
+               | +-------------------------------------------+ |
+               | |    ** PLEASE READ THE DOCUMENTATION **    | |
+               | |    Actions differ for different modes!    | |
+               | +-------------------------------------------+ |
+               +-----------------------------------------------+
+
+
+=======================================================================================
+  RELEASE NOTES 
+=======================================================================================
+
+---------------------------------------------------------------------------------------
+  RELEASE NOTES FOR VERSION 1.0
+---------------------------------------------------------------------------------------
++ Initial upload.
+
+
+=======================================================================================
+  FILES
+=======================================================================================
+
+README.luasupport               This file.
+                                
+plugin/lua-support.vim          The Lua plugin for Vim/gVim.
+
+ftplugin/lua.vim                A filetype plugin. Define hotkeys, create a local 
+                                dictionary for each Lua file.
+
+doc/luasupport.txt              The help file for the local online help. 
+
+lua-support/templates/*         Lua template files (see luasupport.txt) 
+
+lua-support/codesnippets/*      Some Lua code snippets as a starting point.
+
+lua-support/wordlists/lua.list  A file used as dictionary for automatic word
+                                completion.  This file is referenced in the file
+                                customization.vimrc .
+
+-----------------------   -------------------------------------------------------------
+-----------------------   The following files and extensions are for convenience only.
+                          lua-support.vim will work without them.
+                          -------------------------------------------------------------
+
+lua-support/rc/customization.gvimrc   Additional settings I use in  .gvimrc: hot keys,
+                                      mouse settings, ...  The file is commented. 
+                                      Append it to your .gvimrc if you like.
+
+lua-support/rc/customization.vimrc    Additional settings I use in  .vimrc:  
+                                      incremental search, tabstop, hot keys, font, 
+                                      use of dictionaries, ...  The file is commented. 
+                                      Append it to your .vimrc if you like.
+
+lua-support/doc/lua-hot-keys.pdf      Reference card for the key mappings. 
+                                      The mappings can be used with the non-GUI Vim, 
+                                      where the menus are not available.
+
+lua-support/ChangeLog                 The change log.
+
+=======================================================================================
+  ADDITIONAL TIPS
+=======================================================================================
+
+(1) gVim. Toggle 'insert mode' <--> 'normal mode' with the right mouse button
+    (see mapping in file customization.gvimrc).
+
+(2) gVim. Use tear off menus.
+
+(3) Try 'Focus under mouse' as window behavior (No mouse click when the mouse
+    pointer is back from the menu entry).
+
+(4) Use Emulate3Buttons "on" (X11) even for a 3-button mouse. Pressing left and
+    right button simultaneously without moving your fingers is faster than 
+    moving a finger to the middle button (which is often a wheel).
+
+=======================================================================================

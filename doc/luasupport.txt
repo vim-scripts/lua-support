@@ -1,0 +1,781 @@
+*luasupport.txt*                 Lua Support                 December 20 2006
+
+Lua Support                                        *lua-support* *luasupport*
+
+                              Plugin version 1.0
+                        for Vim version 6.0 and above
+                       Fritz Mehner  <mehner@fh-swf.de>
+
+lua-support.vim implements a Lua-IDE for Vim/gVim.  It is written to
+considerably speed up writing code in a consistent style.  This is done by
+inserting complete statements, comments, idioms, code snippets, templates and
+comments.  Syntax checking and running a script can be done with a keystroke.
+There are many additional hints and options which can improve speed and
+comfort when writing Lua. Please read this documentation.
+
+ 1.      Usage with GUI                    |luasupport-usage-gvim|
+ 1.1      Menu 'Comments'                  |luasupport-comments|
+ 1.1.1     Append aligned comments         |luasupport-aligned-comm|
+ 1.1.2     Code to comment                 |luasupport-code-to-comm|
+ 1.1.3     Comment to code                 |luasupport-comm-to-code|
+ 1.1.4     Comment templates               |luasupport-comm-templates|
+ 1.1.5     KEYWORD + comment               |luasupport-comm-keywords|
+ 1.2      Menu 'Statements'                |luasupport-statements|
+ 1.2.1     Normal mode, insert mode        |luasupport-stat-norm-ins|
+ 1.2.2     Visual mode                     |luasupport-stat-visual|
+ 1.2.3     Code snippets                   |luasupport-stat-snippets|
+ 1.3      Menu 'Idioms'                    |luasupport-idioms|
+ 1.3.1      Stub subroutine                |luasupport-stub-sub|
+ 1.3.2      Opening files                  |luasupport-open-files|
+ 1.4      Menu 'Regex'                     |luasupport-regex|
+ 1.5      Menu 'Run'                       |luasupport-run|
+ 1.5.1     Run script                      |luasupport-run-script|
+ 1.5.2     Check syntax                    |luasupport-syntax-check|
+ 1.5.3     Command line arguments          |luasupport-cmdline-args|
+ 1.5.4     Hardcopy                        |luasupport-hardcopy|
+ 1.5.5     Xterm size                      |luasupport-xterm|
+ 1.5.6     Change Output Destination       |luasupport-output|
+ 1.6     Help                              |luasupport-help|
+ 2.      Usage without GUI                 |luasupport-usage-vim|
+ 3.      Hotkeys                           |luasupport-hotkeys|
+ 4.      Customization and configuration   |luasupport-customization|
+ 4.1      Files                            |luasupport-custom-files|
+ 4.2      Global variables                 |luasupport-custom-variables|
+ 4.3      The root menu                    |luasupport-custom-root|
+ 4.4      Tabulator width                  |luasupport-custom-tab|
+ 5.      Template files and tags           |luasupport-tempfiles|
+ 5.1      Template files                   |luasupport-tempfiles|
+ 5.2      Tags                             |luasupport-tags|
+ 6.      Lua Dictionary                    |luasupport-dictionary|
+ 7.      MS-Windows particularities        |luasupport-windows|
+ 8.      Troubleshooting                   |luasupport-troubleshooting|
+ 9.      Release Notes / Change Log        |luasupport-release-notes|
+
+ How to add this help file to vim's help   |add-local-help|
+
+==============================================================================
+1.  USAGE WITH GUI  (gVim)                             *luasupport-usage-gvim*
+==============================================================================
+
+If the root menu 'Lua' is not visible call it with the entry
+"Load Lua Support" from the standard Tools-menu.
+The entry "Unload Lua Support" can be used to remove the Lua root menu.
+See also |luasupport-custom-root|.
+
+------------------------------------------------------------------------------
+1.1 MENU 'Comments'                                      *luasupport-comments*
+------------------------------------------------------------------------------
+
+1.1.1 APPEND ALIGNED COMMENTS TO CONSECUTIVE LINES   *luasupport-aligned-comm*
+--------------------------------------------------
+In NORMAL MODE the menu entry
+ 'line end comment'
+will append an empty comment to the current line.
+
+In VISUAL MODE this entry will append aligned comments to all marked lines.
+Marking the 3 lines
+
+ print( "enter a number: " )
+ a  = io.read("*number")
+ 
+ print( fact(a) )
+
+and choosing 'line end comment' will yield
+
+ print( "enter a number: " )                     -- |
+ a  = io.read("*number")                         -- 
+ 
+ print( fact(a) )                                -- 
+
+The cursor position above is marked by '|' . Empty lines will be ignored.
+
+The default starting column is 49 ( = (8*6 or 4*12 or 2*24) + 1 ).  This can
+be changed by setting a global variable in the file .vimrc , e.g. :
+
+  let g:Lua_LineEndCommColDefault    = 45
+
+The starting column can also be set by the menu entry 'Comments->set end comm.
+col.' . Just position the cursor in an arbitrary column (column number is
+shown in the Vim status line) and choose this menu entry.  This setting is
+buffer related.
+
+1.1.2 CODE TO COMMENT                                *luasupport-code-to-comm*
+---------------------
+A marked block (4 lines)
+
+ print( "enter a number: " )
+ a  = io.read("*number")
+ 
+ print( fact(a) )
+
+will be changed into
+
+ --print( "enter a number: " )
+ --a  = io.read("*number")
+ --
+ --print( fact(a) )
+
+The menu entry works also for a single line. A single line needs not to be
+marked.
+
+
+1.1.3 COMMENT TO CODE                                *luasupport-comm-to-code*
+---------------------
+A marked block
+
+ --x = 2.5
+ y = 3 + x^2
+ --z = 4 + x^3
+
+will be changed into
+
+ x = 2.5
+ y = 3 + x^2
+ z = 4 + x^3
+
+The menu entry works also for a single line. A single line needs not to be
+marked.
+
+
+1.1.4  COMMENT TEMPLATES                           *luasupport-comm-templates*
+------------------------
+Frame comments, function descriptions and file header comments are read as
+templates from the appropriate files (see |luasupport-tempfiles|).
+
+
+1.1.5 KEYWORD+comment                               *luasupport-comm-keywords*
+---------------------
+Preliminary line end comments to document (and find again) places where work
+will be resumed shortly, like
+
+   # :TODO:12.05.2006:Mn: <your comment>
+
+Usually not meant for the final documentation.
+
+------------------------------------------------------------------------------
+1.2  MENU 'Statements'                                 *luasupport-statements*
+------------------------------------------------------------------------------
+
+1.2.1  NORMAL MODE, INSERT MODE.                    *luasupport-stat-norm-ins*
+--------------------------------
+An empty statement will be inserted and properly indented. The entry 
+'if then end' will inserts an if-statement:
+
+ if  then
+ end
+
+
+1.2.2  VISUAL MODE.                                   *luasupport-stat-visual*
+-------------------
+The highlighted area
+
+xxxxx
+xxxxx
+
+can be surrounded by one of the following statements ( '|' marks the cursor
+positon after insertion):
+
+  +----------------------------+-----------------------------+
+  |                            |                             |
+  |       for | = , do         |       if | then             |
+  |           xxxxx            |           xxxxx             |
+  |           xxxxx            |           xxxxx             |
+  |       end                  |       else                  |
+  |                            |       end                   |
+  |                            |                             |
+  +----------------------------+-----------------------------+
+  |                            |                             |
+  |       for | in  do         |       repeat                |
+  |           xxxxx            |           xxxxx             |
+  |           xxxxx            |           xxxxx             |
+  |       end                  |       until |               |
+  |                            |                             |
+  |                            |                             |
+  +----------------------------+-----------------------------+
+  |                            |                             |
+  |       if | then            |       while | do            |
+  |           xxxxx            |           xxxxx             |
+  |           xxxxx            |           xxxxx             |
+  |       end                  |       end                   |
+  |                            |                             |
+  |                            |                             |
+  +----------------------------+-----------------------------+
+
+The whole statement will be indented after insertion.
+
+
+1.2.3  CODE SNIPPETS                                 *luasupport-stat-snippets*
+--------------------
+Code snippets are pieces of code which are kept in separate files in a special
+directory. File names are used to identify the snippets.  The snippet
+directory has to be created by the user ( $HOME/.vim/lua-support/codesnippets is the
+default).  Snippets are managed with the 3 entries
+
+   Lua -> Statements -> read  code snippet
+   Lua -> Statements -> write code snippet
+   Lua -> Statements -> edit  code snippet
+
+from the Statements submenu.
+
+Creating a new snippet:
+-----------------------
+When nothing is marked, "write code snippet" will write the whole buffer
+to a snippet file, otherwise the marked area will be written to a file.
+
+Insert a snippet:
+-----------------
+Select the appropriate file from the snippet directory ("read code snippet").
+The inserted lines will be indented.
+
+Indentation / no indentation
+----------------------------
+Code snippets are normally indented after insertion. To suppress indentation
+add the file extension "ni" or "noindent" to the snippet file name, e.g.
+
+  parameter_handling.lua.noindent
+
+There are some snippets belonging to this plugin package. These are examples.
+Add your own.
+
+------------------------------------------------------------------------------
+1.3  MENU 'Idioms'                                         *luasupport-idioms*
+------------------------------------------------------------------------------
+
+1.3.1  STUB SUBROUTINE                                   *luasupport-stub-sub*
+----------------------
+In normal mode the entry 'subroutine' asks for a subroutine name and creates a
+stub subroutine:
+
+ function xxx ()
+   return
+ end  ----------  end of function xxx  ----------
+
+
+In visual mode with a few lines marked this entry will enclose these lines in
+a subroutine and generate a call to this subroutine. The lines 
+
+ xxxxxxxxxxxxxxxxxxxx
+ xxxxxxxxxxxxxxxxxxxx
+ xxxxxxxxxxxxxxxxxxxx
+
+will be changed into
+
+ function abc ()
+   xxxxxxxxxxxxxxxxxxxx
+   xxxxxxxxxxxxxxxxxxxx
+   xxxxxxxxxxxxxxxxxxxx
+   return
+ end  ----------  end of function abc  ----------
+
+
+1.3.2  OPENING FILES                                   *luasupport-open-files*
+--------------------
+The entries 'open input file' and 'open output file' ask for the
+name of a file handle. After the insertion of the statements
+
+ local INFILE_file_name = ''
+ local INFILE = assert( io.open( INFILE_file_name, "r" ) )
+
+ assert( io.close(INFILE) )
+
+the 'Idioms'-menu will be extended with an entry for the new handle:
+
+ INFILE:read()
+
+After the insertion of the statements for an output file the 'Idioms'-menu
+will be extended by a new print statement for the new handle, e.g.
+
+ OUTFILE:write()
+
+------------------------------------------------------------------------------
+1.4  MENU 'Regex'                                           *luasupport-regex*
+------------------------------------------------------------------------------
+
+In NORMAL and INSERT MODE the items shown will be inserted at the cursor
+position.
+
+In VISUAL MODE the following entries will surround the marked area 'xxx' :
+
+    ()    :      (xxx)
+    []    :      [xxx]
+
+
+------------------------------------------------------------------------------
+1.5  MENU 'Run'                                               *luasupport-run*
+------------------------------------------------------------------------------
+
+1.5.1  RUN SCRIPT                                      *luasupport-run-script*
+-----------------
+Run the script in the current buffer.  The output destination can be chosen
+with the menu entry 'Run->output: ...'.  There are 3 choices: VIM command
+line, seperate output buffer and xterm (see |luasupport-output|).
+
+1.5.2  CHECK SYNTAX                                  *luasupport-syntax-check*
+-------------------
+The script is run as "luac -p  xxx.lua" to check the syntax.
+
+Consider using maps like 
+  map  <silent> <F7>    <Esc>:cp<CR>
+  map  <silent> <F8>    <Esc>:cn<CR>
+in your .vimrc file to jump over the error locations and make navigation
+easier (see also file customization.vimrc |luasupport-custom-files|).
+The error list and the error locations in your source buffer will be
+synchronized.
+
+1.5.3  COMMAND LINE ARGUMENTS                        *luasupport-cmdline-args*
+-----------------------------
+The entry 'command line arguments' calls an input dialog which asks for
+command line arguments. These arguments are forwarded to the script which
+is run by the 'run' entry. The arguments are kept until you change them.
+The arguments can contain pipes and redirections, e.g.
+  " infile.txt | sort -rn > result.txt"
+
+The arguments belong to the current buffer (that is, each buffer can have its
+own arguments). The input dialog has a history.
+
+If the buffer gets a new name with "save as" the arguments will now belong to
+the buffer with the new name.
+
+1.5.4 HARDCOPY                                           *luasupport-hardcopy*
+--------------
+Generates a PostScript file from the whole buffer or from a marked region.
+On a MS-Windows system a printer dialog is displayed.
+
+The print header contains date and time for the current locale. The definition
+used is
+ 
+  let s:Lua_Printheader = "%<%f%h%m%<  %=%{strftime('%x %X')}     Page %N"
+
+The current locale can be overwritten by changing the language, e.g. 
+
+  :language C
+
+or by setting a global variable in the file .vimrc , e.g. for German:
+
+  let g:Lua_Printheader = "%<%f%h%m%<  %=%{strftime('%x %X')}     SEITE %N"
+
+See :h printheader and :h strftime()  for more details. 
+
+1.5.5 XTERM SIZE                                            *luasupport-xterm*
+----------------
+The size of the xterm used  for running the script (below) can be set by this
+menu entry. The default is 80 columns with 24 lines.
+This feature is not available under MS-Windows.
+
+1.5.6 CHANGE OUTPUT DESTINATION                            *luasupport-output*
+-------------------------------
+Running a Lua script can be done in three ways:
+(1) The script can be run from the command line as usual.
+(2) The output can be directed into a window with name "Lua-Output".
+    The buffer and its content will disappear when the window is closed and
+    reused otherwise. If this window remains open it will be used for the next
+    runs. If the script doesn't produce shell output the output window will 
+    not be opened (but you will see a message).
+    There is no file behind the window Lua-Output but the content can be 
+    saved with a 'save as'.
+(3) The script can be run in an xterm.
+
+The output method can be chosen with the menu entry 'Run->output: ...'.
+This menu has three states:
+
+  output: VIM->buffer->xterm
+  output: BUFFER->xterm->vim
+  output: XTERM->vim->buffer
+
+The first (uppercase) item shows the current method.  The default is 'vim'.
+This can be changed by setting the variable g:Lua_OutputGvim to another value.
+Possible values are 'vim', 'buffer' and 'xterm' .
+
+Vim (non-GUI) : The output destination can be toggled between (1) and (2)
+                using the hotkey \ro .  
+
+The xterm defaults can be set in .vimrc by the variable g:Lua_XtermDefaults .
+The default is "-fa courier -fs 12 -geometry 80x24" :
+  font name     : -fa courier
+  font size     : -fs 12
+  terminal size : -geometry 80x24
+See 'xterm -help' for more options. Xterms are not available under MS-Windows.
+
+------------------------------------------------------------------------------
+1.6  'help'                                                  *luasupport-help*
+------------------------------------------------------------------------------
+
+The root menu entry 'help' shows this plugin help in a help window.  The help
+tags must have been generated with
+  :helptags ~/.vim/doc
+
+==============================================================================
+2.  USAGE WITHOUT GUI  (Vim)                            *luasupport-usage-vim*
+==============================================================================
+
+The frequently used constructs can be inserted with key mappings.  The
+mappings are also described in the document lua-hot-keys.pdf (reference
+card).
+
+  -- Load / Unload Lua Support ------------
+
+  \lls    Load Lua support menu
+  \uls    unload lua Support Menu
+
+  -- Help ----------------------------------
+
+  \h       show plugin help (this file)
+
+  -- Comments ------------------------------
+
+  \ce      line end comment                   (normal, visual)
+  \cs      set line end comment column        (normall)
+  \cc      code -> comment                    (visual)
+  \co      comment -> code                    (visual)
+  \cb      comment block                      (normal, visual)
+  \cn      uncomment block                    (normal)
+  \cf      frame comment                      (normal)
+  \cu      function description               (normal)
+  \ch      file header                        (normal)
+  \cd      date                               (normal)
+  \ct      date & time                        (normal)
+  \ckb     keyword comment BUG                (normal)
+  \ckc     keyword comment COMPILER           (normal)
+  \ckt     keyword comment TODO               (normal)
+  \ckr     keyword comment TRICKY             (normal)
+  \ckw     keyword comment WARNING            (normal)
+  \cko     keyword comm.   WORKAROUND         (normal)
+  \ckn     keyw.comm.      New Keyword        (normal)
+
+  -- Statements ----------------------------
+
+  \sf      for do end                         (normal, visual)
+  \so      for in do end                      (normal, visual)
+  \si      if then end                        (normal, visual)
+  \se      if then else end                   (normal, visual)
+  \sl      elseif then                        (normal)
+  \sr      repeat until                       (normal, visual)
+  \sw      while do end                       (normal, visual)
+
+  -- Idioms --------------------------------
+
+  \if      function                           (normal,visual)
+  \ip      print                              (normal,visual)
+  \ik      for k,v in pairs() do              (norm.,visual)
+  \ia      asser                              (normal,visual)
+  \ii      open input file                    (normal)
+  \io      open output file                   (normal)
+
+  -- Snippets ------------------------------
+
+  \sr      read snippet                       (normal \& GUI only)
+  \sw      write snippet                      (normal, visual & GUI only)
+  \sd      edit snippet                       (normal \& GUI only)
+
+  -- Run -----------------------------------
+
+  \rr     update file, run script             see |luasupport-run-script|
+  \rs     update file, check syntax           see |luasupport-syntax-check|
+  \ra     set command line argument           see |luasupport-cmdline-args|
+  \rm     run make                  
+  \rg     command line arguments for make
+  \rh     hardcopy buffer                     see |luasupport-hardcopy|
+  \re     settings and hotkeys 
+  \rx     set xterm size (*)                  see |luasupport-xterm|
+  \ro     change output destination           see |luasupport-output|
+
+File lua-hot-keys.pdf contains a reference card for these key mappings.
+
+Multi-line inserts and code snippets will be indented after insertion.
+
+The hotkeys are defined in the file type plugin lua.vim (part of this
+lua-support plugin package).
+
+==============================================================================
+3.  HOTKEYS                                               *luasupport-hotkeys*
+==============================================================================
+
+The following hotkeys are defined in normal, visual and insert mode:
+
+     Alt-F9   run syntax check
+    Ctrl-F9   run script
+   Shift-F9   set command line arguments (buffer related)
+
+These hotkeys are defined in the file type plugin ~/.vim/ftplugin/lua.vim .
+
+Note for xterm users (Vim without GUI): The function key combinations
+Shift-Fx, Alt-Fx and Ctrl-Fx do not work. F9 is also not working to prevent
+unintentional use.  Use hotkeys instead |luasupport-usage-vim|.
+
+==============================================================================
+4.  CUSTOMIZATION                                   *luasupport-customization*
+==============================================================================
+
+------------------------------------------------------------------------------
+4.1  FILES                                           *luasupport-custom-files*
+------------------------------------------------------------------------------
+
+README.luasupport         Installation,  release notes, files,  ...
+ChangeLog                 The change log.
+                          
+plugin/lua-support.vim    The Lua plugin for Vim/gVim.
+
+ftplugin/lua.vim          A filetype plugin. Define hotkeys, create a local 
+                          dictionary for each Lua file.
+
+doc/luasupport.txt        This help file for the local online help. 
+
+lua-support/templates/lua-file-header           -+-  Lua template files 
+lua-support/templates/lua-frame                  |   (see luasupport.txt)
+lua-support/templates/lua-function-description   +
+
+lua-support/codesnippets/*      Some Lua code snippets as a starting point.
+
+lua-support/wordlists/lua.list  A file used as dictionary for automatic word
+                                completion.  This file is referenced in the file
+                                customization.vimrc .
+
+-----------------------   -------------------------------------------------------------
+-----------------------   The following files and extensions are for convenience only.
+                          lua-support.vim will work without them.
+                          -------------------------------------------------------------
+
+rc/customization.gvimrc   Additional settings I use in  .gvimrc:
+                            hot keys, mouse settings, ...
+                          The file is commented. Append it to your .gvimrc if you like.
+
+rc/customization.vimrc    Additional settings I use in  .vimrc:  incremental search,
+                          tabstop, hot keys, font, use of dictionaries, ...
+                          The file is commented. Append it to your .vimrc if you like.
+
+doc/lua-hot-keys.pdf      Reference card for the key mappings. 
+                          The mappings can be used with the non-GUI Vim, 
+                          where the menus are not available.
+------------------------------------------------------------------------------
+4.2  GLOBAL VARIABLES                            *luasupport-custom-variables*
+------------------------------------------------------------------------------
+
+Several global variables are checked by the script to customize it:
+
+------------------------------------------------------------------------------
+global variable                default value                tag (see below)
+------------------------------------------------------------------------------
+g:Lua_AuthorName               ""                          |AUTHOR|
+g:Lua_AuthorRef                ""                          |AUTHORREF|
+g:Lua_Email                    ""                          |EMAIL|
+g:Lua_Company                  ""                          |COMPANY|
+g:Lua_Project                  ""                          |PROJECT|
+g:Lua_CopyrightHolder          ""                          |COPYRIGHTHOLDER|
+
+g:Lua_Template_Directory       plugin_dir.'lua-support/templates/'
+g:Lua_Template_Lua_File        'lua-file-header'
+g:Lua_Template_Frame           'lua-frame'
+g:Lua_Template_Function        'lua-function-description'
+
+g:Lua_CodeSnippets             plugin_dir.'codesnippets-lua/'
+g:Lua_LoadMenus                'yes'
+g:Lua_Dictionary_File          ''
+g:Lua_Root                     '&Lua.'
+g:Lua_MenuHeader               'yes'
+
+g:Lua_OutputGvim               "vim"
+g:Lua_XtermDefaults            "-fa courier -fs 12 -geometry 80x24"
+g:Lua_LineEndCommColDefault    49
+g:Lua_Printheader              "%<%f%h%m%<  %=%{strftime('%x %X')}     Page %N"
+
+The variable root_dir will automatically be set to one of the following values:
+  $HOME.'/.vim/'        for Linux/Unix
+  $VIM.'/vimfiles/'     for MS-Windows
+
+------------------------------------------------------------------------------
+
+1. group: Defines the text which will be inserted for the tags when a template
+          is read in (see also TEMPLATE FILES AND TAGS below).
+
+          g:Lua_AuthorName      : author name
+          g:Lua_AuthorRef       : author reference (e.g. acronym)
+          g:Lua_Email           : email address
+          g:Lua_Company         : name of the company / institution
+          g:Lua_Project         : project
+          g:Lua_CopyrightHolder : the copyright holder
+
+2. group: Sets the template directory and the names of the template files (see below).
+
+3. group: g:Lua_CodeSnippets    : The name of the code snippet directory (see below).
+          g:Lua_LoadMenus       : Load menus and mappings ("yes", "no") at startup.
+          g:Lua_Dictionary_File : Path and filename of the Lua word list used for
+                                   dictionary completion (see below).
+          g:Lua_Root            : The name of the root menu entry of this plugin
+                                   (see below).
+          g:Lua_MenuHeader      : Switch submenu titles on/off.
+
+4. group: g:Lua_OutputGvim              : when script is running output goes to the vim
+                                           command line ("vim"), to a buffer ("buffer")
+                                           or to an xterm ("xterm").
+          g:Lua_XtermDefaults           : the xterm defaults
+          g:Lua_LineEndCommColDefault   : default starting column for line end comments
+          g:Lua_Printheader             : hardcopy header format 
+
+To override the defaults add appropriate assignments to .vimrc .
+Set at least some personal details into .vimrc by overriding some defaults.
+Here the minimal personalization (my settings as an example, of course):
+
+      let g:Lua_AuthorName      = 'Dr.-Ing. Fritz Mehner'
+      let g:Lua_AuthorRef       = 'Mn'
+      let g:Lua_Email           = 'mehner@fh-swf.de'
+      let g:Lua_Company         = 'FH Südwestfalen, Iserlohn'
+
+
+------------------------------------------------------------------------------
+4.3  THE ROOT MENU                                    *luasupport-custom-root*
+------------------------------------------------------------------------------
+
+The variable g:Lua_Root, if set (in .vimrc or in .gvimrc), gives the name of
+the single gVim root menu entry in which the Lua submenus will be put.
+The default is
+                  '&Lua.'
+Note the terminating dot. A single root menu entry is appropriate if the
+screen is limited or several plugins are in use.
+
+If set to "", this single root menu entry will not appear.  Now all submenus
+are put into the gVim root menu. Nice for a Lua-only-programmer and Lua
+courses.
+
+
+------------------------------------------------------------------------------
+4.4  Tabulator width                                   *luasupport-custom-tab*
+------------------------------------------------------------------------------
+
+A good choice for the tabulator width is 4. You can force this setting for all
+files with file type 'lua' by uncommenting the two lines
+
+  "setlocal tabstop=4
+  "setlocal shiftwidth=4
+
+in the file type plugin ~/.vim/ftplugin/lua.vim . 
+
+==============================================================================
+5.  TEMPLATE FILES AND TAGS                             *luasupport-tempfiles*
+==============================================================================
+
+------------------------------------------------------------------------------
+5.1  TEMPLATE FILES 
+------------------------------------------------------------------------------
+
+Four menu entries generate block comments:
+
+    Lua -> Comments -> frame comment
+    Lua -> Comments -> function description
+    Lua -> Comments -> file header
+
+The comments which will be inserted by these menu entries are read from
+template files:
+
+------------------------------------------------------------------------------
+MENU ENTRY              FILE                          GLOBAL VARIABLE
+------------------------------------------------------------------------------
+frame comment           lua-frame                     g:Lua_Template_Frame
+function description    lua-function-description      g:Lua_Template_Function
+file header             lua-file-header               g:Lua_Template_Lua_File
+------------------------------------------------------------------------------
+
+The template files can be written or changed by the user to fulfill special
+requirements (layout for a project or work group already exists, file headers /
+blocks have to be prepared for a documentation tool, ... ).  They can hold not
+only comments but a complete file skeleton if this is necessary.  So you may
+want to lay out your own templates.
+
+The templates belonging to this plugin package are suggestions. You may want
+to create your own templates.
+
+------------------------------------------------------------------------------
+5.2  TAGS                                                    *luasupport-tags*
+------------------------------------------------------------------------------
+
+The comments in these files do not have to be personalized but they can.
+The text can contain the following tags which are replaced by the appropriate
+information when the file is read in:
+
+    |AUTHOR|
+    |DATE|
+    |EMAIL|
+    |FILENAME|
+    |YEAR|
+
+    |AUTHORREF|
+    |COMPANY|
+    |COPYRIGHTHOLDER|
+    |PROJECT|
+    |TIME|
+
+    |CURSOR|
+
+Each tag can occur more than once. The tag |CURSOR| may appear only once.
+The tag |CURSOR| will be the cursor position after the block is read in.
+There is no need to use any of these tags, some or all can be missing.
+
+The template files can actually be links pointing to existing templates.
+
+
+==============================================================================
+6.  LUA DICTIONARY                                     *luasupport-dictionary*
+==============================================================================
+
+The file  lua.list  contains words used as dictionary for automatic word
+completion.  This feature is enabled by default. The default word list is
+
+  $HOME/.vim/lua-support/wordlists/lua.list
+
+If you want to use an additional list MyLua.List put the following line into
+ .vimrc :
+
+  let g:Lua_Dictionary_File    =  "$HOME/.vim/lua-support/wordlists/lua.list,".
+                              \   "$HOME/.vim/lua-support/wordlists/MyLua.List"
+
+The right side is a comma separated list of files. Note the point at the end
+of the first line (string concatenation) and the backslash in front of the
+second line (continuation line).
+You can use Vim's dictionary feature CTRL-X, CTRL-K (and CTRL-P, CTRL-N).
+
+
+==============================================================================
+7.  MS-Windows PARTICULARITIES                            *luasupport-windows*
+==============================================================================
+
+The plugins should go into the directory structure below the local
+installation directory $HOME/.vim/ for LINUX/UNIX and $VIM/vimfiles/ for
+MS-Windows.
+The values of the two variables can be found from inside Vim:
+   :echo $VIM 
+or
+   :echo $HOME
+
+Configuration files:
+
+  LINUX/UNIX :   $HOME/.vimrc  and  $HOME/.gvimrc 
+  MS-Windows :   $VIM/_vimrc   and  $VIM/_gvimrc
+
+
+==============================================================================
+8.  TROUBLESHOOTING                               *luasupport-troubleshooting*
+==============================================================================
+
+* Lua script not executable from inside the editor.
+  - Script executable from the command line ?
+  - Lua installation correct ?
+  - PATH variable correct ?
+  - Script syntax correct ?
+  - Necessary modules installed ?
+
+* Some plugin features not present (e.g. hotkeys).
+  - Does the file type plugin $HOME/.vim/ftplugin/lua.vim exist ?
+
+* Some hotkeys do not work.
+  - The hotkeys might be in use by your graphical desktop environment.
+    Under KDE Ctrl-F9 is the hotkey which let you switch to the 9. desktop.
+    The key settings can usually be redefined.
+    
+
+==============================================================================
+9.  RELEASE NOTES / CHANGELOG                        *luasupport-release-notes*
+==============================================================================
+
+See files 'RADME.luasupport' and 'ChangeLog'.
+
+==============================================================================
+vim:tw=78:noet:ts=2:ft=help:norl:
