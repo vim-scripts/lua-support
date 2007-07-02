@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------
+  RELEASE NOTES FOR VERSION 1.1
+---------------------------------------------------------------------------------------
++ New menu item and key mapping to adjust end-of-line comments.
++ New insert mode mappings.
++ A few mappings have been renamed (to bring them into line with my C/C++).
++ New global variable for Lua compiler and interpreter name.
++ Better adaption for console mode.
++ Better adaption for MS Windows.
++ Snippets can now be managed in the console mode.
+
+---------------------------------------------------------------------------------------
   RELEASE NOTES FOR VERSION 1.0
 ---------------------------------------------------------------------------------------
 + Initial upload.

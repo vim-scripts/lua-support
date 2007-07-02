@@ -1,8 +1,8 @@
-*luasupport.txt*                 Lua Support                 December 20 2006
+*luasupport.txt*                 Lua Support                    June 30 2007
 
 Lua Support                                        *lua-support* *luasupport*
 
-                              Plugin version 1.0
+                              Plugin version 1.1
                         for Vim version 6.0 and above
                        Fritz Mehner  <mehner@fh-swf.de>
 
@@ -412,6 +412,8 @@ The frequently used constructs can be inserted with key mappings.  The
 mappings are also described in the document lua-hot-keys.pdf (reference
 card).
 
+Legend:  (i) insert mode, (n) normal mode, (v) visual mode
+
   -- Load / Unload Lua Support ------------
 
   \lls    Load Lua support menu
@@ -423,61 +425,62 @@ card).
 
   -- Comments ------------------------------
 
-  \ce      line end comment                   (normal, visual)
-  \cs      set line end comment column        (normall)
-  \cc      code -> comment                    (visual)
-  \co      comment -> code                    (visual)
-  \cb      comment block                      (normal, visual)
-  \cn      uncomment block                    (normal)
-  \cf      frame comment                      (normal)
-  \cu      function description               (normal)
-  \ch      file header                        (normal)
-  \cd      date                               (normal)
-  \ct      date & time                        (normal)
-  \ckb     keyword comment BUG                (normal)
-  \ckc     keyword comment COMPILER           (normal)
-  \ckt     keyword comment TODO               (normal)
-  \ckr     keyword comment TRICKY             (normal)
-  \ckw     keyword comment WARNING            (normal)
-  \cko     keyword comm.   WORKAROUND         (normal)
-  \ckn     keyw.comm.      New Keyword        (normal)
+  \cl      end-of-line comment                (n, v, i)
+  \cj      adjust end-of-line comment         (n, v, i)
+  \cs      set end-of-line column             (n)
+  \cc      code -> comment                    (v)
+  \co      comment -> code                    (v)
+  \cb      comment block                      (n, v)
+  \cub     uncomment block                    (n)
+  \cfr     frame comment                      (n, i)
+  \cfu     function description               (n, i)
+  \ch      file header                        (n, i)
+  \cd      date                               (n, i)
+  \ct      date & time                        (n, i)
+  \ckb     keyword comment BUG                (n)
+  \ckc     keyword comment COMPILER           (n)
+  \ckt     keyword comment TODO               (n)
+  \ckr     keyword comment TRICKY             (n)
+  \ckw     keyword comment WARNING            (n)
+  \cko     keyword comm.   WORKAROUND         (n)
+  \ckn     keyw.comm.      New Keyword        (n)
 
   -- Statements ----------------------------
 
-  \sf      for do end                         (normal, visual)
-  \so      for in do end                      (normal, visual)
-  \si      if then end                        (normal, visual)
-  \se      if then else end                   (normal, visual)
-  \sl      elseif then                        (normal)
-  \sr      repeat until                       (normal, visual)
-  \sw      while do end                       (normal, visual)
+  \sf      for do end                         (n, v, i)
+  \sfi     for in do end                      (n, v, i)
+  \si      if then end                        (n, v, i)
+  \sie     if then else end                   (n, v, i)
+  \sei     elseif then                        (n, i)
+  \sr      repeat until                       (n, v, i)
+  \sw      while do end                       (n, v, i)
 
   -- Idioms --------------------------------
 
-  \if      function                           (normal,visual)
-  \ip      print                              (normal,visual)
-  \ik      for k,v in pairs() do              (norm.,visual)
-  \ia      asser                              (normal,visual)
-  \ii      open input file                    (normal)
-  \io      open output file                   (normal)
+  \if      function                           (n, v, i)
+  \ip      print                              (n, v, i)
+  \ifi     for k,v in pairs() do              (n, v, i)
+  \ias     assert                             (n, v, i)
+  \ii      open input file                    (n, i)
+  \io      open output file                   (n, i)
 
   -- Snippets ------------------------------
 
-  \sr      read snippet                       (normal \& GUI only)
-  \sw      write snippet                      (normal, visual & GUI only)
-  \sd      edit snippet                       (normal \& GUI only)
+  \sr      read snippet                       (n)
+  \sw      write snippet                      (n, v)
+  \sd      edit snippet                       (n)
 
   -- Run -----------------------------------
 
-  \rr     update file, run script             see |luasupport-run-script|
-  \rs     update file, check syntax           see |luasupport-syntax-check|
-  \ra     set command line argument           see |luasupport-cmdline-args|
-  \rm     run make                  
-  \rg     command line arguments for make
-  \rh     hardcopy buffer                     see |luasupport-hardcopy|
-  \re     settings and hotkeys 
-  \rx     set xterm size (*)                  see |luasupport-xterm|
-  \ro     change output destination           see |luasupport-output|
+  \rr     update file, run script             (n)  see |luasupport-run-script|
+  \rc     update file, check syntax           (n)  see |luasupport-syntax-check|
+  \ra     set command line argument           (n)  see |luasupport-cmdline-args|
+  \rm     run make                            (n) 
+  \rg     command line arguments for make     (n)
+  \rh     hardcopy buffer                     (n, v)  see |luasupport-hardcopy|
+  \rs     settings and hotkeys                (n)
+  \rx     set xterm size (*)                  (n)  see |luasupport-xterm|
+  \ro     change output destination           (n)  see |luasupport-output|
 
 File lua-hot-keys.pdf contains a reference card for these key mappings.
 
@@ -525,6 +528,8 @@ lua-support/templates/lua-frame                  |   (see luasupport.txt)
 lua-support/templates/lua-function-description   +
 
 lua-support/codesnippets/*      Some Lua code snippets as a starting point.
+
+lua-support/scripts/wrapper.sh  The wrapper script for the use of an xterm.
 
 lua-support/wordlists/lua.list  A file used as dictionary for automatic word
                                 completion.  This file is referenced in the file
@@ -578,6 +583,11 @@ g:Lua_XtermDefaults            "-fa courier -fs 12 -geometry 80x24"
 g:Lua_LineEndCommColDefault    49
 g:Lua_Printheader              "%<%f%h%m%<  %=%{strftime('%x %X')}     Page %N"
 
+g:Lua_Compiler                 "luac"          (Unix/Linux)
+                               "luac5.1.exe"   (MS-Windows)
+g:Lua_Interpreter              "lua"           (Unix/Linux)
+                               "lua5.1.exe"    (MS-Windows)
+
 The variable root_dir will automatically be set to one of the following values:
   $HOME.'/.vim/'        for Linux/Unix
   $VIM.'/vimfiles/'     for MS-Windows
@@ -612,6 +622,7 @@ The variable root_dir will automatically be set to one of the following values:
           g:Lua_Printheader             : hardcopy header format 
 
 To override the defaults add appropriate assignments to .vimrc .
+
 Set at least some personal details into .vimrc by overriding some defaults.
 Here the minimal personalization (my settings as an example, of course):
 

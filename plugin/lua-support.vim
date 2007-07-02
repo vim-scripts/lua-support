@@ -19,9 +19,8 @@
 "          Email:  mehner@fh-swf.de
 "  
 "        Version:  see variable  g:Lua_Version  below 
-"       Revision:  22.12.2006
 "        Created:  06.07.2006
-"        License:  Copyright (c) 2006, Fritz Mehner
+"        License:  Copyright (c) 2006-2007, Fritz Mehner
 "                  This program is free software; you can redistribute it and/or
 "                  modify it under the terms of the GNU General Public License as
 "                  published by the Free Software Foundation, version 2 of the
@@ -31,7 +30,7 @@
 "                  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 "                  PURPOSE.
 "                  See the GNU General Public License version 2 for more details.
-"        
+"       Revision:  $Id: lua-support.vim,v 1.5 2007/06/30 19:21:32 mehner Exp $
 "------------------------------------------------------------------------------
 " 
 " Prevent duplicate loading: 
@@ -39,7 +38,7 @@
 if exists("g:Lua_Version") || &cp
  finish
 endif
-let g:Lua_Version= "1.0"  							" version number of this script; do not change
+let g:Lua_Version= "1.1"  							" version number of this script; do not change
 "        
 "###############################################################################################
 "
@@ -54,16 +53,20 @@ let	s:MSWIN =		has("win16") || has("win32")     || has("win64") ||
 " 
 if	s:MSWIN
 	"
-	let s:plugin_dir	= $VIM.'\vimfiles\'
-	let s:home_dir	  = ''
-  let s:escfilename = ' %#'
-  let s:escfilename = ''
+	let	s:Lua_Interpreter	='lua5.1.exe'
+	let	s:Lua_Compiler		='luac5.1.exe'
+	let s:plugin_dir			= $VIM.'\vimfiles\'
+	let s:home_dir	  		= ''
+  let s:escfilename 		= ' %#'
+  let s:escfilename 		= ''
 	"
 else
 	"
-	let s:plugin_dir	= $HOME.'/.vim/'
-	let s:home_dir	  = $HOME.'/'
-  let s:escfilename = ' \%#[]'
+	let	s:Lua_Interpreter	='lua'
+	let	s:Lua_Compiler		='luac'
+	let s:plugin_dir			= $HOME.'/.vim/'
+	let s:home_dir	  		= $HOME.'/'
+  let s:escfilename 		= ' \%#[]'
 	"
 endif
 "
@@ -86,6 +89,7 @@ let s:Lua_CopyrightHolder= ""
 let s:Lua_LoadMenus      = "yes"
 " 
 let s:Lua_CodeSnippets   = s:plugin_dir.'lua-support/codesnippets/'
+let s:Lua_Scripts        = s:plugin_dir.'lua-support/scripts/'
 "                     
 let s:Lua_MenuHeader     = "yes"
 let s:Lua_Printheader    = "%<%f%h%m%<  %=%{strftime('%x %X')}     Page %N"
@@ -113,18 +117,20 @@ endfunction    " ----------  end of function Lua_CheckGlobal ----------
 call Lua_CheckGlobal("Lua_AuthorName             ")
 call Lua_CheckGlobal("Lua_AuthorRef              ")
 call Lua_CheckGlobal("Lua_Company                ")
+call Lua_CheckGlobal("Lua_Compiler               ")
 call Lua_CheckGlobal("Lua_CopyrightHolder        ")
 call Lua_CheckGlobal("Lua_Email                  ")
+call Lua_CheckGlobal("Lua_Interpreter            ")
 call Lua_CheckGlobal("Lua_LoadMenus              ")
 call Lua_CheckGlobal("Lua_MenuHeader             ")
 call Lua_CheckGlobal("Lua_OutputGvim             ")
-call Lua_CheckGlobal("Lua_Project                ")
 call Lua_CheckGlobal("Lua_Printheader            ")
-call Lua_CheckGlobal("Lua_XtermDefaults          ")
+call Lua_CheckGlobal("Lua_Project                ")
 call Lua_CheckGlobal("Lua_Template_Directory     ")
-call Lua_CheckGlobal("Lua_Template_Lua_File      ")
-call Lua_CheckGlobal("Lua_Template_Function      ")
 call Lua_CheckGlobal("Lua_Template_Frame         ")
+call Lua_CheckGlobal("Lua_Template_Function      ")
+call Lua_CheckGlobal("Lua_Template_Lua_File      ")
+call Lua_CheckGlobal("Lua_XtermDefaults          ")
 "
 "----- some variables for internal use only -----------------------------------
 "
@@ -166,10 +172,12 @@ function! Lua_InitMenu ()
 		exe "amenu  ".s:Lua_Root.'&Comments.&Comments<Tab>Lua               <Esc>'
 		exe "amenu  ".s:Lua_Root.'&Comments.-Sep00-                            :'
 	endif
-	exe "amenu <silent> ".s:Lua_Root.'&Comments.line\ &end\ comment       <Esc><Esc><Esc>:call Lua_LineEndComment("-- ")<CR>A' 
-	exe "vmenu <silent> ".s:Lua_Root.'&Comments.line\ &end\ comment       <Esc><Esc><Esc>:call Lua_MultiLineEndComments("-- ")<CR>A'
+	exe "amenu <silent> ".s:Lua_Root.'&Comments.end-of-&line\ comment        <Esc><Esc><Esc>:call Lua_LineEndComment("-- ")<CR>A' 
+	exe "vmenu <silent> ".s:Lua_Root.'&Comments.end-of-&line\ comment        <Esc><Esc><Esc>:call Lua_MultiLineEndComments("-- ")<CR>A'
+	exe "amenu <silent> ".s:Lua_Root.'&Comments.ad&just\ end-of-line\ com\.  <Esc><Esc>:call Lua_AdjustLineEndComm("a")<CR>'
+	exe "vmenu <silent> ".s:Lua_Root.'&Comments.ad&just\ end-of-line\ com\.  <Esc><Esc>:call Lua_AdjustLineEndComm("v")<CR>'
 
-	exe "amenu <silent> ".s:Lua_Root.'&Comments.&set\ end\ comm\.\ col\.  <Esc><Esc>:call Lua_GetLineEndCommCol()<CR>'
+	exe "amenu <silent> ".s:Lua_Root.'&Comments.&set\ end-of-line\ com\.\ col\.  <Esc><Esc>:call Lua_GetLineEndCommCol()<CR>'
 
 	exe "amenu  ".s:Lua_Root.'&Comments.-SEP1-                              :'
 	exe "amenu <silent> ".s:Lua_Root."&Comments.&code->comment       <Esc><Esc>:s/^/--/<CR><Esc>:nohlsearch<CR>"
@@ -396,6 +404,73 @@ function! Lua_Input ( promp, text )
 	echohl None													" reset highlighting
 	return retval
 endfunction    " ----------  end of function Lua_Input ----------
+"
+"------------------------------------------------------------------------------
+"  Lua_AdjustLineEndComm: adjust line-end comments  
+"------------------------------------------------------------------------------
+function! Lua_AdjustLineEndComm ( mode ) range
+	"
+	if !exists("b:Lua_LineEndCommentColumn")
+		let	b:Lua_LineEndCommentColumn	= s:Lua_LineEndCommColDefault
+	endif
+
+	let save_cursor = getpos(".")
+
+	let	save_expandtab	= &expandtab
+	exe	":set expandtab"
+
+	if a:mode == 'v'
+		let pos0	= line("'<")
+		let pos1	= line("'>")
+	else
+		let pos0	= line(".")
+		let pos1	= pos0
+	end
+
+	let	linenumber	= pos0
+	exe ":".pos0
+
+	while linenumber <= pos1
+		let	line= getline(".")
+		" look for a Perl comment
+		let idx1	= 1 + match( line, '\s*--.*$' )
+		let idx2	= 1 + match( line, '--.*$' )
+
+		let	ln	= line(".")
+		call setpos(".", [ 0, ln, idx1, 0 ] )
+		let vpos1	= virtcol(".")
+		call setpos(".", [ 0, ln, idx2, 0 ] )
+		let vpos2	= virtcol(".")
+
+		if   ! (  vpos2 == b:Lua_LineEndCommentColumn 
+					\	|| vpos1 > b:Lua_LineEndCommentColumn
+					\	|| idx2  == 0 )
+
+			exe ":.,.retab"
+			" insert some spaces
+			if vpos2 < b:Lua_LineEndCommentColumn
+				let	diff	= b:Lua_LineEndCommentColumn-vpos2
+				call setpos(".", [ 0, ln, vpos2, 0 ] )
+				let	@"	= ' '
+				exe "normal	".diff."P"
+			end
+
+			" remove some spaces
+			if vpos1 < b:Lua_LineEndCommentColumn && vpos2 > b:Lua_LineEndCommentColumn
+				let	diff	= vpos2 - b:Lua_LineEndCommentColumn
+				call setpos(".", [ 0, ln, b:Lua_LineEndCommentColumn, 0 ] )
+				exe "normal	".diff."x"
+			end
+
+		end
+		let linenumber=linenumber+1
+		normal j
+	endwhile
+	" restore tab expansion settings and cursor position
+	let &expandtab	= save_expandtab
+	call setpos('.', save_cursor)
+
+endfunction		" ---------- end of function  Lua_AdjustLineEndComm  ----------
 "
 "------------------------------------------------------------------------------
 "  Comments : get line-end comment position
@@ -870,72 +945,73 @@ endfunction   " ---------- end of function  Lua_OpenOutputFile  ----------
 "------------------------------------------------------------------------------
 "  Idioms : read / edit code snippet
 "------------------------------------------------------------------------------
-function! Lua_CodeSnippet(arg1)
-	if !has("gui_running")
-		return
-	endif
-	if isdirectory(s:Lua_CodeSnippets)
-		"
-		" read snippet file, put content below current line and indent
-		" 
-		if a:arg1 == "r"
-			let	l:snippetfile=browse(0,"read a code snippet",s:Lua_CodeSnippets,"")
-			if filereadable(l:snippetfile)
-				let	linesread= line("$")
-				let l:old_cpoptions	= &cpoptions " Prevent the alternate buffer from being set to this files
-				setlocal cpoptions-=a
-				:execute "read ".l:snippetfile
-				let &cpoptions	= l:old_cpoptions		" restore previous options
-				let	linesread= line("$")-linesread-1
-				if linesread>=0 && match( l:snippetfile, '\.\(ni\|noindent\)$' ) < 0 
-				endif
-			endif
-			if line(".")==2 && getline(1)=~"^$"
-				silent exe ":1,1d"
-			endif
-		endif
-		"
-		" update current buffer / split window / edit snippet file
-		" 
-		if a:arg1 == "e"
-			let	l:snippetfile	= browse(0,"edit a code snippet",s:Lua_CodeSnippets,"")
-			if l:snippetfile != ""
-				:execute "update! | split | edit ".l:snippetfile
-			endif
-		endif
-		"
-		" write whole buffer into snippet file 
-		" 
-		if a:arg1 == "w"
-			let	l:snippetfile=browse(0,"write a code snippet",s:Lua_CodeSnippets,"")
-			if l:snippetfile != ""
-				if filereadable(l:snippetfile)
-					if confirm("File ".l:snippetfile." exists ! Overwrite ? ", "&Cancel\n&No\n&Yes") != 3
-						return
-					endif
-				endif
-				:execute ":write! ".l:snippetfile
-			endif
-		endif
-		"
-		" write marked area into snippet file 
-		" 
-		if a:arg1 == "wv"
-			let	l:snippetfile=browse(0,"write a code snippet",s:Lua_CodeSnippets,"")
-			if l:snippetfile != ""
-				if filereadable(l:snippetfile)
-					if confirm("File ".l:snippetfile." exists ! Overwrite ? ", "&Cancel\n&No\n&Yes") != 3
-						return
-					endif
-				endif
-				:execute ":*write! ".l:snippetfile
-			endif
-		endif
+function! Lua_CodeSnippet(mode)
+  if isdirectory(s:Lua_CodeSnippets)
+    "
+    " read snippet file, put content below current line
+    " 
+    if a:mode == "r"
+			if has("gui_running")
+				let l:snippetfile=browse(0,"read a code snippet",s:Lua_CodeSnippets,"")
+			else
+				let	l:snippetfile=input("read snippet ", s:Lua_CodeSnippets, "file" )
+			end
+      if filereadable(l:snippetfile)
+        let linesread= line("$")
+        let l:old_cpoptions = &cpoptions " Prevent the alternate buffer from being set to this files
+        setlocal cpoptions-=a
+        :execute "read ".l:snippetfile
+        let &cpoptions  = l:old_cpoptions   " restore previous options
+        "
+        let linesread= line("$")-linesread-1
+        if linesread>=0 && match( l:snippetfile, '\.\(ni\|noindent\)$' ) < 0 
+          silent exe "normal =".linesread."+"
+        endif
+      endif
+    endif
+    "
+    " update current buffer / split window / edit snippet file
+    " 
+    if a:mode == "e"
+			if has("gui_running")
+				let l:snippetfile=browse(0,"edit a code snippet",s:Lua_CodeSnippets,"")
+			else
+				let	l:snippetfile=input("edit snippet ", s:Lua_CodeSnippets, "file" )
+			end
+      if l:snippetfile != ""
+        :execute "update! | split | edit ".l:snippetfile
+      endif
+    endif
+    "
+    " write whole buffer or marked area into snippet file 
+    " 
+    if a:mode == "w" || a:mode == "wv"
+			if has("gui_running")
+				let l:snippetfile=browse(0,"write a code snippet",s:Lua_CodeSnippets,"")
+			else
+				let	l:snippetfile=input("write snippet ", s:Lua_CodeSnippets, "file" )
+			end
+      if l:snippetfile != ""
+        if filereadable(l:snippetfile)
+          if confirm("File ".l:snippetfile." exists ! Overwrite ? ", "&Cancel\n&No\n&Yes") != 3
+            return
+          endif
+        endif
+				if a:mode == "w"
+					:execute ":write! ".l:snippetfile
+				else
+					:execute ":*write! ".l:snippetfile
+				end
+      endif
+    endif
 
-	else
-		echo "code snippet directory ".s:Lua_CodeSnippets." does not exist (please create it)"
-	endif
-endfunction    " ----------  end of function Lua_CodeSnippets  ----------
+  else
+    redraw
+    echohl ErrorMsg
+    echo "code snippet directory ".s:Lua_CodeSnippets." does not exist"
+    echohl None
+  endif
+endfunction   " ---------- end of function  Lua_CodeSnippet  ----------
 "
 "
 "------------------------------------------------------------------------------
@@ -961,28 +1037,27 @@ function! Lua_SyntaxCheck ()
   "
   " avoid filtering the Lua output if the file name does not contain blanks:
   " 
-    let l:fullname        = escape( l:fullname, s:escfilename )
-    "
-    " 
-    exe "set makeprg=luac"
-    exe ':setlocal errorformat=luac:%f:%l:%m'
+	let l:fullname        = escape( l:fullname, s:escfilename )
+	"
+	" 
+	let	makeprg_saved	= &makeprg
+	exe ':setlocal makeprg='.s:Lua_Compiler
+	exe ":setlocal errorformat=".s:Lua_Compiler.':\ %f:%l:%m,'.s:Lua_Compiler.':%m'
 
   silent exe  ":make -p ".l:fullname
-
-  exe ":botright cwindow"
-  exe ':setlocal errorformat='
-  exe "set makeprg=make"
+  exe ":setlocal makeprg=".makeprg_saved
+  :botright cwindow
+  :setlocal errorformat=
   "
   " message in case of success
   "
-  if l:currentbuffer ==  bufname("%")
+	if !v:shell_error
     let s:Lua_SyntaxCheckMsg = l:currentbuffer." : Syntax is OK"
-    return 0
+    return
   else
     setlocal wrap
     setlocal linebreak
   endif
-  return 1
 endfunction   " ---------- end of function  Lua_SyntaxCheck  ----------
 "
 "  Also called in the filetype plugin lua.vim
@@ -1020,25 +1095,30 @@ function! Lua_Run ()
   silent exe ":update"
   silent exe ":cclose"
   "
+	let dquote	= ''
   if  s:MSWIN
     let l:arguments = substitute( l:arguments, '^\s\+', ' ', '' )
     let l:arguments = substitute( l:arguments, '\s\+', "\" \"", 'g')
     let l:switches  = substitute( l:switches, '^\s\+', ' ', '' )
     let l:switches  = substitute( l:switches, '\s\+', "\" \"", 'g')
+		let dquote	= '"'
   endif
   "
   "------------------------------------------------------------------------------
   "  run : run from the vim command line
   "------------------------------------------------------------------------------
-  if s:Lua_OutputGvim == "vim"
-    "
-    if  s:MSWIN
-      exe "!lua \"".l:switches.l:fullname." ".l:arguments."\""
-    else
-      exe "!lua ".l:switches.l:fullname.l:arguments
-    endif
-    "
-  endif
+	if s:Lua_OutputGvim == "vim"
+		if  s:MSWIN
+			exe '!'.s:Lua_Interpreter." ".dquote.l:switches.l:fullname.l:arguments.dquote
+		else
+			let	makeprg_saved	= &makeprg
+			exe ':setlocal makeprg='.s:Lua_Interpreter	
+			exe ":setlocal errorformat=".s:Lua_Interpreter.':\ %f:%l:%m,'.s:Lua_Interpreter.':%m'
+			exe "make ".dquote.l:switches.l:fullname.l:arguments.dquote
+			exe ":setlocal makeprg=".makeprg_saved
+			:botright cwindow
+		endif
+	endif
   "
   "------------------------------------------------------------------------------
   "  run : redirect output to an output buffer
@@ -1068,11 +1148,7 @@ function! Lua_Run ()
       "
       setlocal  modifiable
       silent exe ":update"
-      if  s:MSWIN
-        exe "%!lua \"".l:switches.l:fullname.l:arguments."\""
-      else
-        exe "%!lua ".l:switches.l:fullname.l:arguments
-      endif
+			exe '%!'.s:Lua_Interpreter." ".dquote.l:switches.l:fullname.l:arguments.dquote
       setlocal  nomodifiable
       "
       " stdout is empty / not empty
@@ -1094,9 +1170,9 @@ function! Lua_Run ()
     "
     if  s:MSWIN
       " same as "vim"
-      exe "!lua \"".l:switches.l:fullname." ".l:arguments."\""
+			exe '!'.s:Lua_Interpreter." ".dquote.l:switches.l:fullname.l:arguments.dquote
     else
-      silent exe '!xterm -title '.l:fullname.' '.s:Lua_XtermDefaults.' -e '.s:plugin_dir.'plugin/wrapper.sh lua '.l:switches.l:fullname.l:arguments
+      silent exe '!xterm -title '.l:fullname.' '.s:Lua_XtermDefaults.' -e '.s:Lua_Scripts.'wrapper.sh '.s:Lua_Interpreter.' '.l:switches.l:fullname.l:arguments
     endif
     "
   endif
@@ -1126,24 +1202,40 @@ endfunction   " ---------- end of function  Lua_Arguments  ----------
 "----------------------------------------------------------------------
 function! Lua_Toggle_Gvim_Xterm ()
 
-	if s:Lua_OutputGvim == "vim"
-		exe "aunmenu  <silent>  ".s:Lua_Root.'&Run.&output:\ VIM->buffer->xterm'
-		exe "amenu    <silent>  ".s:Lua_Root.'&Run.&output:\ BUFFER->xterm->vim              <C-C>:call Lua_Toggle_Gvim_Xterm()<CR><CR>'
-		let	s:Lua_OutputGvim	= "buffer"
-	else
-		if s:Lua_OutputGvim == "buffer"
-			exe "aunmenu  <silent>  ".s:Lua_Root.'&Run.&output:\ BUFFER->xterm->vim'
-			exe "amenu    <silent>  ".s:Lua_Root.'&Run.&output:\ XTERM->vim->buffer             <C-C>:call Lua_Toggle_Gvim_Xterm()<CR><CR>'
-			let	s:Lua_OutputGvim	= "xterm"
-		else
-			" ---------- output : xterm -> gvim
-			exe "aunmenu  <silent>  ".s:Lua_Root.'&Run.&output:\ XTERM->vim->buffer'
-			exe "amenu    <silent>  ".s:Lua_Root.'&Run.&output:\ VIM->buffer->xterm            <C-C>:call Lua_Toggle_Gvim_Xterm()<CR><CR>'
-			let	s:Lua_OutputGvim	= "vim"
-		endif
-	endif
+  if has("gui_running")
+    if s:Lua_OutputGvim == "vim"
+      if has("gui_running")
+        exe "aunmenu  <silent>  ".s:Lua_Root.'&Run.&output:\ VIM->buffer->xterm'
+        exe "amenu    <silent>  ".s:Lua_Root.'&Run.&output:\ BUFFER->xterm->vim              <C-C>:call Lua_Toggle_Gvim_Xterm()<CR><CR>'
+      endif
+      let s:Lua_OutputGvim = "buffer"
+    else
+      if s:Lua_OutputGvim == "buffer"
+        if has("gui_running")
+          exe "aunmenu  <silent>  ".s:Lua_Root.'&Run.&output:\ BUFFER->xterm->vim'
+          exe "amenu    <silent>  ".s:Lua_Root.'&Run.&output:\ XTERM->vim->buffer             <C-C>:call Lua_Toggle_Gvim_Xterm()<CR><CR>'
+          let s:Lua_OutputGvim = "xterm"
+        else
+          let s:Lua_OutputGvim = "vim"
+        endif
+      else
+        " ---------- output : xterm -> gvim
+        if has("gui_running")
+          exe "aunmenu  <silent>  ".s:Lua_Root.'&Run.&output:\ XTERM->vim->buffer'
+          exe "amenu    <silent>  ".s:Lua_Root.'&Run.&output:\ VIM->buffer->xterm            <C-C>:call Lua_Toggle_Gvim_Xterm()<CR><CR>'
+        endif
+        let s:Lua_OutputGvim = "vim"
+      endif
+    endif
+  else
+    if s:Lua_OutputGvim == "vim"
+      let s:Lua_OutputGvim = "buffer"
+    else
+      let s:Lua_OutputGvim = "vim"
+    endif
+  endif
 
-endfunction    " ----------  end of function Lua_Toggle_Gvim_Xterm ----------
+endfunction    " ----------  end of function Lua_Toggle_Gvim_Xterm  ----------
 "
 "------------------------------------------------------------------------------
 "  run : xterm geometry

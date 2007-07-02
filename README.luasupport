@@ -1,4 +1,4 @@
-README for lua-support.vim (Version 1.0) / December 17 2006
+README for lua-support.vim (Version 1.1) / June 30 2007
 
   *  INSTALLATION
   *  RELEASE NOTES 
@@ -69,10 +69,15 @@ and look at the luasupport help with
 =======================================================================================
 
 ---------------------------------------------------------------------------------------
-  RELEASE NOTES FOR VERSION 1.0
+  RELEASE NOTES FOR VERSION 1.1
 ---------------------------------------------------------------------------------------
-+ Initial upload.
-
++ New menu item and key mapping to adjust end-of-line comments.
++ New insert mode mappings.
++ A few mappings have been renamed (to bring them into line with my C/C++).
++ New global variable for Lua compiler and interpreter name.
++ Better adaption for console mode.
++ Better adaption for MS Windows.
++ Snippets can now be managed in the console mode.
 
 =======================================================================================
   FILES
@@ -86,6 +91,8 @@ ftplugin/lua.vim                A filetype plugin. Define hotkeys, create a loca
                                 dictionary for each Lua file.
 
 doc/luasupport.txt              The help file for the local online help. 
+
+lua-support/scripts/wrapper.sh  The wrapper script for the use of an xterm.
 
 lua-support/templates/*         Lua template files (see luasupport.txt) 
 
